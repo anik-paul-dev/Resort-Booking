@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { fetchUserBookings, cancelBooking } from '../../services/api';
-import { formatDate, formatCurrency } from '../../utils/helpers';
+import { formatDate, formatCurrency } from '../utils/helpers.jsx';
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState([]);

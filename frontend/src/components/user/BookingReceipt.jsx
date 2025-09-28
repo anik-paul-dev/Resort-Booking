@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Button } from 'react-bootstrap';
 import { fetchUserBookingById } from '../../services/api';
-import { formatDate, formatCurrency, calculateNights } from '../../utils/helpers';
+import { formatDate, formatCurrency, calculateNights } from '../utils/helpers.jsx';
 
 const BookingReceipt = () => {
   const { id } = useParams();

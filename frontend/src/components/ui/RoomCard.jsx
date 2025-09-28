@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Button } from 'react-bootstrap';
-import { generateStars, formatCurrency } from '../../utils/helpers';
+import { generateStars, formatCurrency } from '../utils/helpers.jsx';
 
 const RoomCard = ({ room }) => {
   return (

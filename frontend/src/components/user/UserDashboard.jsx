@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { useAuth } from '../../hooks/useAuth';
 import { fetchUserBookings } from '../../services/api';
-import { formatDate, formatCurrency } from '../../utils/helpers';
+import { formatDate, formatCurrency } from '../utils/helpers.jsx';
 
 const UserDashboard = () => {
   const { user } = useAuth();

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Modal } from 'react-bootstrap';
-import { fetchAdminReviews, fetchReviewById, updateReviewStatus, deleteReview, fetchReviewStats } from '../../services/api';
-import { formatDate } from '../../utils/helpers';
+import { fetchAdminQueries, fetchQueryById, updateQueryStatus, deleteQuery } from '../../services/api';
+import { formatDate, formatCurrency, generateStars } from '../utils/helpers.jsx';
 
-const ManageReviews = () => {
-  const [reviews, setReviews] = useState([]);
+const ManageQueries = () => {
+  const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     page: 1,
@@ -14,50 +14,35 @@ const ManageReviews = () => {
   const [pagination, setPagination] = useState({
     totalPages: 1,
     currentPage: 1,
-    totalReviews: 0,
+    totalQueries: 0,
   });
   const [showModal, setShowModal] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
+  const [selectedQuery, setSelectedQuery] = useState(null);
   const [responseForm, setResponseForm] = useState({
-    status: 'pending',
+    status: 'read',
     response: '',
   });
-  const [stats, setStats] = useState(null);
-  const [statsPeriod, setStatsPeriod] = useState('month');
 
   useEffect(() => {
-    const loadReviews = async () => {
+    const loadQueries = async () => {
       try {
         setLoading(true);
-        const response = await fetchAdminReviews(filters);
-        setReviews(response.data.reviews);
+        const response = await fetchAdminQueries(filters);
+        setQueries(response.data.queries);
         setPagination({
           totalPages: response.data.totalPages,
           currentPage: response.data.currentPage,
-          totalReviews: response.data.totalReviews,
+          totalQueries: response.data.totalQueries,
         });
       } catch (error) {
-        console.error('Error loading reviews:', error);
+        console.error('Error loading queries:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadReviews();
+    loadQueries();
   }, [filters]);
-
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const response = await fetchReviewStats(statsPeriod);
-        setStats(response.data);
-      } catch (error) {
-        console.error('Error loading review stats:', error);
-      }
-    };
-
-    loadStats();
-  }, [statsPeriod]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -75,21 +60,17 @@ const ManageReviews = () => {
     }));
   };
 
-  const handleStatsPeriodChange = (e) => {
-    setStatsPeriod(e.target.value);
-  };
-
-  const openResponseModal = async (reviewId) => {
+  const openResponseModal = async (queryId) => {
     try {
-      const response = await fetchReviewById(reviewId);
-      setSelectedReview(response.data);
+      const response = await fetchQueryById(queryId);
+      setSelectedQuery(response.data);
       setResponseForm({
         status: response.data.status,
         response: response.data.response || '',
       });
       setShowModal(true);
     } catch (error) {
-      console.error('Error loading review:', error);
+      console.error('Error loading query:', error);
     }
   };
 
@@ -103,84 +84,38 @@ const ManageReviews = () => {
 
   const handleResponseSubmit = async () => {
     try {
-      await updateReviewStatus(selectedReview._id, responseForm);
-      // Refresh reviews list
-      const response = await fetchAdminReviews(filters);
-      setReviews(response.data.reviews);
+      await updateQueryStatus(selectedQuery._id, responseForm);
+      // Refresh queries list
+      const response = await fetchAdminQueries(filters);
+      setQueries(response.data.queries);
       setShowModal(false);
     } catch (error) {
-      console.error('Error updating review status:', error);
+      console.error('Error updating query status:', error);
     }
   };
 
-  const handleDelete = async (reviewId) => {
-    if (window.confirm('Are you sure you want to delete this review?')) {
+  const handleDelete = async (queryId) => {
+    if (window.confirm('Are you sure you want to delete this query?')) {
       try {
-        await deleteReview(reviewId);
-        // Refresh reviews list
-        const response = await fetchAdminReviews(filters);
-        setReviews(response.data.reviews);
+        await deleteQuery(queryId);
+        // Refresh queries list
+        const response = await fetchAdminQueries(filters);
+        setQueries(response.data.queries);
       } catch (error) {
-        console.error('Error deleting review:', error);
+        console.error('Error deleting query:', error);
       }
     }
   };
 
-  const renderStars = (rating) => {
-    return '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  };
-
   if (loading) {
-    return <div className="text-center py-5">Loading reviews...</div>;
+    return <div className="text-center py-5">Loading queries...</div>;
   }
 
   return (
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Manage Reviews</h1>
+        <h1>Manage Queries</h1>
       </div>
-      
-      <Row className="mb-4">
-        <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Total Reviews</Card.Title>
-              <Card.Text className="stat-value">{stats?.totalReviews || 0}</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Average Rating</Card.Title>
-              <Card.Text className="stat-value">{stats?.avgRating?.toFixed(1) || '0.0'}</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Pending Reviews</Card.Title>
-              <Card.Text className="stat-value">
-                {reviews.filter(r => r.status === 'pending').length}
-              </Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card>
-            <Card.Body>
-              <Card.Title>Period</Card.Title>
-              <Form.Select value={statsPeriod} onChange={handleStatsPeriodChange}>
-                <option value="day">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="year">This Year</option>
-              </Form.Select>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
       
       <Card className="mb-4">
         <Card.Body>
@@ -191,7 +126,7 @@ const ManageReviews = () => {
                 <Form.Select name="status" value={filters.status} onChange={handleFilterChange}>
                   <option value="">All</option>
                   <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
+                  <option value="read">Read</option>
                   <option value="rejected">Rejected</option>
                 </Form.Select>
               </Form.Group>
@@ -212,36 +147,34 @@ const ManageReviews = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>User</th>
-              <th>Room</th>
-              <th>Rating</th>
-              <th>Comment</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Subject</th>
               <th>Date</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {reviews.map(review => (
-              <tr key={review._id}>
-                <td>{review.user?.name}</td>
-                <td>{review.room?.name}</td>
-                <td>{renderStars(review.rating)}</td>
-                <td>{review.comment.substring(0, 50)}...</td>
-                <td>{formatDate(review.createdAt)}</td>
+            {queries.map(query => (
+              <tr key={query._id}>
+                <td>{query.name}</td>
+                <td>{query.email}</td>
+                <td>{query.subject}</td>
+                <td>{formatDate(query.createdAt)}</td>
                 <td>
                   <span className={`badge ${
-                    review.status === 'pending' ? 'bg-warning' : 
-                    review.status === 'approved' ? 'bg-success' : 'bg-danger'
+                    query.status === 'pending' ? 'bg-warning' : 
+                    query.status === 'read' ? 'bg-success' : 'bg-danger'
                   }`}>
-                    {review.status}
+                    {query.status}
                   </span>
                 </td>
                 <td>
-                  <Button variant="outline-primary" size="sm" className="me-2" onClick={() => openResponseModal(review._id)}>
-                    Review
+                  <Button variant="outline-primary" size="sm" className="me-2" onClick={() => openResponseModal(query._id)}>
+                    Respond
                   </Button>
-                  <Button variant="outline-danger" size="sm" onClick={() => handleDelete(review._id)}>
+                  <Button variant="outline-danger" size="sm" onClick={() => handleDelete(query._id)}>
                     Delete
                   </Button>
                 </td>
@@ -277,17 +210,17 @@ const ManageReviews = () => {
       
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Review Details</Modal.Title>
+          <Modal.Title>Respond to Query</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {selectedReview && (
+          {selectedQuery && (
             <>
-              <h5>Review Information</h5>
-              <p><strong>User:</strong> {selectedReview.user?.name}</p>
-              <p><strong>Room:</strong> {selectedReview.room?.name}</p>
-              <p><strong>Rating:</strong> {renderStars(selectedReview.rating)}</p>
-              <p><strong>Comment:</strong> {selectedReview.comment}</p>
-              <p><strong>Date:</strong> {formatDate(selectedReview.createdAt)}</p>
+              <h5>Query Details</h5>
+              <p><strong>Name:</strong> {selectedQuery.name}</p>
+              <p><strong>Email:</strong> {selectedQuery.email}</p>
+              <p><strong>Subject:</strong> {selectedQuery.subject}</p>
+              <p><strong>Message:</strong> {selectedQuery.message}</p>
+              <p><strong>Date:</strong> {formatDate(selectedQuery.createdAt)}</p>
               
               <hr />
               
@@ -297,7 +230,7 @@ const ManageReviews = () => {
                   <Form.Label>Status</Form.Label>
                   <Form.Select name="status" value={responseForm.status} onChange={handleResponseChange}>
                     <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
+                    <option value="read">Read</option>
                     <option value="rejected">Rejected</option>
                   </Form.Select>
                 </Form.Group>
@@ -321,7 +254,7 @@ const ManageReviews = () => {
             Cancel
           </Button>
           <Button variant="primary" onClick={handleResponseSubmit}>
-            Save Response
+            Send Response
           </Button>
         </Modal.Footer>
       </Modal>
@@ -329,4 +262,4 @@ const ManageReviews = () => {
   );
 };
 
-export default ManageReviews;
+export default ManageQueries;

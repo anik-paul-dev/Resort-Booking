@@ -1,7 +1,7 @@
 import React from 'react';
 import Slider from 'react-slick';
 import { Card } from 'react-bootstrap';
-import { generateStars, formatDate } from '../../utils/helpers';
+import { generateStars, formatDate } from '../utils/helpers.jsx';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { fetchAdminDashboard } from '../../services/api';
-import { formatCurrency } from '../../utils/helpers';
-
+import { formatDate, formatCurrency, generateStars } from '../utils/helpers.jsx';
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);

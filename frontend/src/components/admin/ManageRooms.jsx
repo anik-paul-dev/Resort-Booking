@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Modal } from 'react-bootstrap';
 import { fetchRooms, createRoom, updateRoom, deleteRoom, fetchFeatures, fetchFacilities } from '../../services/api';
-import { formatCurrency } from '../../utils/helpers';
+import { formatDate, formatCurrency, generateStars } from '../utils/helpers.jsx';
 
 const ManageRooms = () => {
   const [rooms, setRooms] = useState([]);

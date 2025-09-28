@@ -1,43 +1,43 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { AppProvider } from './context/AppContext';
-import Header from './components/common/Header';
-import Footer from './components/common/Footer';
-import PrivateRoute from './components/common/PrivateRoute';
-import AdminRoute from './components/common/AdminRoute';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { AppProvider } from './context/AppContext.jsx';
+import Header from './components/common/Header.jsx';
+import Footer from './components/common/Footer.jsx';
+import PrivateRoute from './components/common/PrivateRoute.jsx';
+import AdminRoute from './components/common/AdminRoute.jsx';
 
 // Public pages
-import Home from './components/public/Home';
-import Rooms from './components/public/Rooms';
-import RoomDetails from './components/public/RoomDetails';
-import Features from './components/public/Features';
-import Facilities from './components/public/Facilities';
-import RoomAvailability from './components/public/RoomAvailability';
-import MenuPackages from './components/public/MenuPackages';
-import Contact from './components/public/Contact';
-import Login from './components/public/Login';
-import Register from './components/public/Register';
-import VerifyEmail from './components/public/VerifyEmail';
-import ForgotPassword from './components/public/ForgotPassword';
-import ResetPassword from './components/public/ResetPassword';
+import Home from './components/public/Home.jsx';
+import Rooms from './components/public/Rooms.jsx';
+import RoomDetails from './components/public/RoomDetails.jsx';
+import Features from './components/public/Features.jsx';
+import Facilities from './components/public/Facilities.jsx';
+import RoomAvailability from './components/public/RoomAvailability.jsx';
+import MenuPackages from './components/public/MenuPackages.jsx';
+import Contact from './components/public/Contact.jsx';
+import Login from './components/public/Login.jsx';
+import Register from './components/public/Register.jsx';
+import VerifyEmail from './components/public/VerifyEmail.jsx';
+import ForgotPassword from './components/public/ForgotPassword.jsx';
+import ResetPassword from './components/public/ResetPassword.jsx';
 
 // User pages
-import UserDashboard from './components/user/UserDashboard';
-import UserProfile from './components/user/UserProfile';
-import UserBookings from './components/user/UserBookings';
-import BookingReceipt from './components/user/BookingReceipt';
+import UserDashboard from './components/user/UserDashboard.jsx';
+import UserProfile from './components/user/UserProfile.jsx';
+import UserBookings from './components/user/UserBookings.jsx';
+import BookingReceipt from './components/user/BookingReceipt.jsx';
 
 // Admin pages
-import AdminDashboard from './components/admin/AdminDashboard';
-import AdminLayout from './components/admin/AdminLayout';
-import ManageRooms from './components/admin/ManageRooms';
-import ManageUsers from './components/admin/ManageUsers';
-import ManageFeatures from './components/admin/ManageFeatures';
-import ManageFacilities from './components/admin/ManageFacilities';
-import ManageCarousel from './components/admin/ManageCarousel';
-import ManageQueries from './components/admin/ManageQueries';
-import ManageReviews from './components/admin/ManageReviews';
-import Settings from './components/admin/Settings';
+import AdminDashboard from './components/admin/AdminDashboard.jsx';
+import AdminLayout from './components/admin/AdminLayout.jsx';
+import ManageRooms from './components/admin/ManageRooms.jsx';
+import ManageUsers from './components/admin/ManageUsers.jsx';
+import ManageFeatures from './components/admin/ManageFeatures.jsx';
+import ManageFacilities from './components/admin/ManageFacilities.jsx';
+import ManageCarousel from './components/admin/ManageCarousel.jsx';
+import ManageQueries from './components/admin/ManageQueries.jsx';
+import ManageReviews from './components/admin/ManageReviews.jsx';
+import Settings from './components/admin/Settings.jsx';
 
 function App() {
   return (

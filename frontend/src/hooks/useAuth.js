@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth as useAuthContext } from '../context/AuthContext';
 
-export const useAuth = () => {
-  const { user, login, register, logout, loading } = useAuth();
+export const useCustomAuth = () => {
+  const { user, login, register, logout, loading } = useAuthContext();
   
   return {
     user,

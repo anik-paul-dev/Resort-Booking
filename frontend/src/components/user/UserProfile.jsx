@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Card, Alert, Button } from 'react-bootstrap';
-import { useAuth } from '../../hooks/useAuth';
+import { useCustomAuth } from '../hooks/useAuth';
 import { authAPI } from '../../services/auth';
 
 const UserProfile = () => {
