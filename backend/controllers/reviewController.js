@@ -1,181 +1,124 @@
 const Review = require('../models/Review');
 
-const getReviews = async (req, res) => {
+// @desc    Get all reviews
+// @route   GET /api/reviews
+// @access  Public
+exports.getReviews = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status, roomId } = req.query;
-    const query = {};
-    
-    if (status) {
-      query.status = status;
-    }
-    
-    if (roomId) {
-      query.room = roomId;
-    }
+    const reviews = await Review.find({ status: 'approved' })
+      .populate('user', 'name avatar')
+      .populate('room', 'name');
 
-    const reviews = await Review.find(query)
-      .populate('user', 'name profileImage')
-      .populate('room', 'name')
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    const count = await Review.countDocuments(query);
-
-    res.json({
-      reviews,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      totalReviews: count,
+    res.status(200).json({
+      success: true,
+      count: reviews.length,
+      data: reviews
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const getReviewById = async (req, res) => {
+// @desc    Get single review
+// @route   GET /api/reviews/:id
+// @access  Public
+exports.getReview = async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate('user', 'name profileImage')
+      .populate('user', 'name avatar')
       .populate('room', 'name');
-    
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-    
-    res.json(review);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-const updateReviewStatus = async (req, res) => {
-  try {
-    const { status, response } = req.body;
-    const review = await Review.findById(req.params.id);
-    
     if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
+      return res.status(404).json({
+        success: false,
+        message: `Review not found with id of ${req.params.id}`
+      });
     }
-    
-    review.status = status;
-    if (response) {
-      review.response = response;
-    }
-    
-    await review.save();
-    res.json(review);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-const deleteReview = async (req, res) => {
-  try {
-    const review = await Review.findById(req.params.id);
-    
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
-    
-    // Remove review from room
-    const Room = require('../models/Room');
-    const room = await Room.findById(review.room);
-    room.reviews = room.reviews.filter(r => r.toString() !== review._id.toString());
-    await room.save();
-    
-    await review.remove();
-    res.json({ message: 'Review deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-const getReviewStats = async (req, res) => {
-  try {
-    const { period = 'month' } = req.query;
-    let startDate, endDate, groupBy;
-    
-    const now = new Date();
-    
-    switch (period) {
-      case 'day':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-        break;
-      case 'week':
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - 7);
-        endDate = new Date(now);
-        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31);
-        groupBy = { $dateToString: { format: "%Y-%m", date: "$createdAt" } };
-        break;
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-    }
-    
-    const reviews = await Review.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate }
-        }
-      },
-      {
-        $group: {
-          _id: groupBy,
-          count: { $sum: 1 },
-          avgRating: { $avg: "$rating" }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
-    
-    const totalReviews = await Review.countDocuments({
-      createdAt: { $gte: startDate, $lte: endDate }
+    res.status(200).json({
+      success: true,
+      data: review
     });
-    
-    const avgRating = await Review.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: startDate, $lte: endDate }
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          avg: { $avg: "$rating" }
-        }
-      }
-    ]);
-    
-    res.json({
-      reviews,
-      totalReviews,
-      avgRating: avgRating[0]?.avg || 0,
-      period
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-module.exports = {
-  getReviews,
-  getReviewById,
-  updateReviewStatus,
-  deleteReview,
-  getReviewStats,
+// @desc    Create new review
+// @route   POST /api/reviews
+// @access  Private
+exports.createReview = async (req, res, next) => {
+  try {
+    // Add user to req.body
+    req.body.user = req.user.id;
+
+    // Check if review already exists for this booking
+    const existingReview = await Review.findOne({ booking: req.body.booking });
+    if (existingReview) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already reviewed this booking'
+      });
+    }
+
+    const review = await Review.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: review
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Update review
+// @route   PUT /api/reviews/:id
+// @access  Private (Admin only)
+exports.updateReview = async (req, res, next) => {
+  try {
+    const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: `Review not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: review
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete review
+// @route   DELETE /api/reviews/:id
+// @access  Private (Admin only)
+exports.deleteReview = async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+      return res.status(404).json({
+        success: false,
+        message: `Review not found with id of ${req.params.id}`
+      });
+    }
+
+    review.remove();
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    next(err);
+  }
 };

@@ -1,108 +1,108 @@
 const Feature = require('../models/Feature');
 
-const getFeatures = async (req, res) => {
+// @desc    Get all features
+// @route   GET /api/features
+// @access  Public
+exports.getFeatures = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, isActive } = req.query;
-    const query = {};
-    
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
-    }
+    const features = await Feature.find({ isActive: true });
 
-    const features = await Feature.find(query)
-      .sort({ name: 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    const count = await Feature.countDocuments(query);
-
-    res.json({
-      features,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      totalFeatures: count,
+    res.status(200).json({
+      success: true,
+      count: features.length,
+      data: features
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const getFeatureById = async (req, res) => {
+// @desc    Get single feature
+// @route   GET /api/features/:id
+// @access  Public
+exports.getFeature = async (req, res, next) => {
   try {
     const feature = await Feature.findById(req.params.id);
-    
-    if (!feature) {
-      return res.status(404).json({ message: 'Feature not found' });
-    }
-    
-    res.json(feature);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-const createFeature = async (req, res) => {
-  try {
-    const { name, icon, description } = req.body;
-    
-    const feature = new Feature({
-      name,
-      icon,
-      description,
+    if (!feature) {
+      return res.status(404).json({
+        success: false,
+        message: `Feature not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: feature
     });
-    
-    await feature.save();
-    res.status(201).json(feature);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const updateFeature = async (req, res) => {
+// @desc    Create new feature
+// @route   POST /api/features
+// @access  Private (Admin only)
+exports.createFeature = async (req, res, next) => {
   try {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['name', 'icon', 'description', 'isActive'];
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-    
-    if (!isValidOperation) {
-      return res.status(400).json({ message: 'Invalid updates' });
-    }
-    
-    const feature = await Feature.findById(req.params.id);
-    
-    if (!feature) {
-      return res.status(404).json({ message: 'Feature not found' });
-    }
-    
-    updates.forEach(update => feature[update] = req.body[update]);
-    await feature.save();
-    
-    res.json(feature);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const feature = await Feature.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: feature
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-const deleteFeature = async (req, res) => {
+// @desc    Update feature
+// @route   PUT /api/features/:id
+// @access  Private (Admin only)
+exports.updateFeature = async (req, res, next) => {
+  try {
+    const feature = await Feature.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!feature) {
+      return res.status(404).json({
+        success: false,
+        message: `Feature not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: feature
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete feature
+// @route   DELETE /api/features/:id
+// @access  Private (Admin only)
+exports.deleteFeature = async (req, res, next) => {
   try {
     const feature = await Feature.findById(req.params.id);
-    
-    if (!feature) {
-      return res.status(404).json({ message: 'Feature not found' });
-    }
-    
-    await feature.remove();
-    res.json({ message: 'Feature deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-module.exports = {
-  getFeatures,
-  getFeatureById,
-  createFeature,
-  updateFeature,
-  deleteFeature,
+    if (!feature) {
+      return res.status(404).json({
+        success: false,
+        message: `Feature not found with id of ${req.params.id}`
+      });
+    }
+
+    feature.remove();
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    next(err);
+  }
 };

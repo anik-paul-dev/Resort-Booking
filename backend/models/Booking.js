@@ -1,60 +1,74 @@
 const mongoose = require('mongoose');
 
-const bookingSchema = new mongoose.Schema({
+const BookingSchema = new mongoose.Schema({
   user: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.ObjectId,
     ref: 'User',
-    required: true,
+    required: true
   },
   room: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.ObjectId,
     ref: 'Room',
-    required: true,
+    required: true
   },
   checkIn: {
     type: Date,
-    required: true,
+    required: [true, 'Please add check-in date']
   },
   checkOut: {
     type: Date,
-    required: true,
+    required: [true, 'Please add check-out date']
   },
   adults: {
     type: Number,
-    required: true,
+    required: [true, 'Please add number of adults'],
+    min: [1, 'At least 1 adult is required']
   },
   children: {
     type: Number,
     default: 0,
+    min: [0, 'Children cannot be negative']
   },
   totalPrice: {
     type: Number,
-    required: true,
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'confirmed', 'cancelled'],
-    default: 'pending',
-  },
-  paymentStatus: {
-    type: String,
-    enum: ['pending', 'paid', 'failed'],
-    default: 'pending',
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer'],
+    required: [true, 'Please add total price'],
+    min: [0, 'Total price must be at least 0']
   },
   specialRequests: {
     type: String,
+    maxlength: [500, 'Special requests cannot be more than 500 characters']
   },
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    default: 'pending'
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'paid', 'refunded'],
+    default: 'pending'
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['credit_card', 'debit_card', 'paypal', 'bank_transfer', 'cash'],
+    default: 'credit_card'
+  },
+  paymentId: {
+    type: String
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 }, {
-  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Index for faster queries
-bookingSchema.index({ room: 1, checkIn: 1, checkOut: 1 });
+// Virtual for number of nights
+BookingSchema.virtual('nights').get(function() {
+  const diffTime = Math.abs(new Date(this.checkOut) - new Date(this.checkIn));
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+});
 
-const Booking = mongoose.model('Booking', bookingSchema);
-
-module.exports = Booking;
+module.exports = mongoose.model('Booking', BookingSchema);

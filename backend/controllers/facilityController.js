@@ -1,109 +1,108 @@
 const Facility = require('../models/Facility');
 
-const getFacilities = async (req, res) => {
+// @desc    Get all facilities
+// @route   GET /api/facilities
+// @access  Public
+exports.getFacilities = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, isActive } = req.query;
-    const query = {};
-    
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
-    }
+    const facilities = await Facility.find({ isActive: true });
 
-    const facilities = await Facility.find(query)
-      .sort({ name: 1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    const count = await Facility.countDocuments(query);
-
-    res.json({
-      facilities,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      totalFacilities: count,
+    res.status(200).json({
+      success: true,
+      count: facilities.length,
+      data: facilities
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const getFacilityById = async (req, res) => {
+// @desc    Get single facility
+// @route   GET /api/facilities/:id
+// @access  Public
+exports.getFacility = async (req, res, next) => {
   try {
     const facility = await Facility.findById(req.params.id);
-    
-    if (!facility) {
-      return res.status(404).json({ message: 'Facility not found' });
-    }
-    
-    res.json(facility);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-const createFacility = async (req, res) => {
-  try {
-    const { name, image, description, openingHours } = req.body;
-    
-    const facility = new Facility({
-      name,
-      image,
-      description,
-      openingHours,
+    if (!facility) {
+      return res.status(404).json({
+        success: false,
+        message: `Facility not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: facility
     });
-    
-    await facility.save();
-    res.status(201).json(facility);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const updateFacility = async (req, res) => {
+// @desc    Create new facility
+// @route   POST /api/facilities
+// @access  Private (Admin only)
+exports.createFacility = async (req, res, next) => {
   try {
-    const updates = Object.keys(req.body);
-    const allowedUpdates = ['name', 'image', 'description', 'openingHours', 'isActive'];
-    const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-    
-    if (!isValidOperation) {
-      return res.status(400).json({ message: 'Invalid updates' });
-    }
-    
-    const facility = await Facility.findById(req.params.id);
-    
-    if (!facility) {
-      return res.status(404).json({ message: 'Facility not found' });
-    }
-    
-    updates.forEach(update => facility[update] = req.body[update]);
-    await facility.save();
-    
-    res.json(facility);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const facility = await Facility.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: facility
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-const deleteFacility = async (req, res) => {
+// @desc    Update facility
+// @route   PUT /api/facilities/:id
+// @access  Private (Admin only)
+exports.updateFacility = async (req, res, next) => {
+  try {
+    const facility = await Facility.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!facility) {
+      return res.status(404).json({
+        success: false,
+        message: `Facility not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: facility
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete facility
+// @route   DELETE /api/facilities/:id
+// @access  Private (Admin only)
+exports.deleteFacility = async (req, res, next) => {
   try {
     const facility = await Facility.findById(req.params.id);
-    
-    if (!facility) {
-      return res.status(404).json({ message: 'Facility not found' });
-    }
-    
-    await facility.remove();
-    res.json({ message: 'Facility deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-module.exports = {
-  getFacilities,
-  getFacilityById,
-  createFacility,
-  updateFacility,
-  deleteFacility,
+    if (!facility) {
+      return res.status(404).json({
+        success: false,
+        message: `Facility not found with id of ${req.params.id}`
+      });
+    }
+
+    facility.remove();
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    next(err);
+  }
 };

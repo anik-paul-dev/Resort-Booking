@@ -1,13 +1,11 @@
-import React from 'react';
-import Slider from 'react-slick';
-import { Button } from 'react-bootstrap';
-import { useApp } from '../../context/AppContext';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
+import React from 'react'
+import Slider from 'react-slick'
+import 'slick-carousel/slick/slick.css'
+import 'slick-carousel/slick/slick-theme.css'
+import { Button } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 
-const Carousel = () => {
-  const { carousel } = useApp();
-
+const Carousel = ({ items }) => {
   const settings = {
     dots: true,
     infinite: true,
@@ -17,27 +15,40 @@ const Carousel = () => {
     autoplay: true,
     autoplaySpeed: 5000,
     pauseOnHover: true,
-  };
+    fade: true,
+    cssEase: 'linear'
+  }
 
   return (
-    <div className="home-carousel">
+    <div className="carousel-container mb-5">
       <Slider {...settings}>
-        {carousel.map((item) => (
-          <div key={item._id} className="carousel-item" style={{ backgroundImage: `url(${item.image})` }}>
-            <div className="carousel-caption d-none d-md-block">
-              <h2>{item.title}</h2>
-              <p>{item.description}</p>
-              {item.buttonText && item.buttonLink && (
-                <Button as="a" href={item.buttonLink} variant="primary" className="mt-3">
-                  {item.buttonText}
-                </Button>
-              )}
+        {items.map((item, index) => (
+          <div key={index} className="carousel-item">
+            <div 
+              className="carousel-slide"
+              style={{ 
+                backgroundImage: `url(${item.image})`,
+                height: '500px',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                position: 'relative'
+              }}
+            >
+              <div className="carousel-caption">
+                <h2>{item.title}</h2>
+                <p>{item.description}</p>
+                {item.link && (
+                  <Button as={Link} to={item.link} variant="primary">
+                    {item.buttonText || 'Learn More'}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}
       </Slider>
     </div>
-  );
-};
+  )
+}
 
-export default Carousel;
+export default Carousel

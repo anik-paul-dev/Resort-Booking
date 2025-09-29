@@ -1,87 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import Calendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import './Calendar.css';
+import React, { useState } from 'react'
+import { Calendar as BigCalendar, dateFnsLocalizer } from 'react-big-calendar'
+import format from 'date-fns/format'
+import parse from 'date-fns/parse'
+import startOfWeek from 'date-fns/startOfWeek'
+import getDay from 'date-fns/getDay'
+import enUS from 'date-fns/locale/en-US'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 
-const CustomCalendar = ({ roomId, onDateSelect }) => {
-  const [bookedDates, setBookedDates] = useState([]);
-  const [date, setDate] = useState(new Date());
-  const [loading, setLoading] = useState(true);
+const locales = {
+  'en-US': enUS,
+}
 
-  useEffect(() => {
-    const fetchBookedDates = async () => {
-      try {
-        setLoading(true);
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        // This would be replaced with an actual API call
-        // const response = await fetchRoomAvailability(roomId, year, month);
-        // setBookedDates(response.data.bookedDates);
-        
-        // Mock data for demonstration
-        setBookedDates(['2023-06-15', '2023-06-16', '2023-06-20', '2023-06-21']);
-      } catch (error) {
-        console.error('Error fetching booked dates:', error);
-      } finally {
-        setLoading(false);
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+})
+
+const Calendar = ({ bookings, rooms }) => {
+  const [date, setDate] = useState(new Date())
+  const [view, setView] = useState('month')
+
+  // Transform bookings to events for the calendar
+  const events = bookings.map(booking => {
+    const room = rooms.find(r => r._id === booking.room)
+    return {
+      id: booking._id,
+      title: `${room ? room.name : 'Room'} - ${booking.user.name}`,
+      start: new Date(booking.checkIn),
+      end: new Date(booking.checkOut),
+      allDay: true,
+      resource: booking,
+    }
+  })
+
+  const eventStyleGetter = (event) => {
+    const backgroundColor = '#8B4513'
+    const style = {
+      backgroundColor,
+      borderRadius: '0px',
+      opacity: 0.8,
+      color: 'white',
+      border: '0px',
+      display: 'block'
+    }
+    return {
+      style: style
+    }
+  }
+
+  const dayPropGetter = (date) => {
+    const dayBookings = bookings.filter(booking => {
+      const checkIn = new Date(booking.checkIn)
+      const checkOut = new Date(booking.checkOut)
+      return date >= checkIn && date <= checkOut
+    })
+    
+    const totalRooms = rooms.length
+    const bookedRooms = dayBookings.length
+    const availableRooms = totalRooms - bookedRooms
+    
+    let style = {}
+    
+    if (availableRooms === 0) {
+      style = {
+        backgroundColor: '#f8d7da',
+        color: '#721c24'
       }
-    };
-
-    if (roomId) {
-      fetchBookedDates();
-    }
-  }, [roomId, date]);
-
-  const tileClassName = ({ date, view }) => {
-    if (view === 'month') {
-      const dateStr = date.toISOString().split('T')[0];
-      if (bookedDates.includes(dateStr)) {
-        return 'unavailable';
+    } else if (availableRooms < totalRooms / 2) {
+      style = {
+        backgroundColor: '#fff3cd',
+        color: '#856404'
+      }
+    } else {
+      style = {
+        backgroundColor: '#d4edda',
+        color: '#155724'
       }
     }
-    return null;
-  };
-
-  const tileDisabled = ({ date, view }) => {
-    if (view === 'month') {
-      const dateStr = date.toISOString().split('T')[0];
-      return bookedDates.includes(dateStr) || date < new Date().setHours(0, 0, 0, 0);
+    
+    return {
+      className: 'rbc-day-bg',
+      style
     }
-    return false;
-  };
-
-  const onChange = (value) => {
-    setDate(value);
-    if (onDateSelect) {
-      onDateSelect(value);
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center py-5">Loading calendar...</div>;
   }
 
   return (
     <div className="calendar-container">
-      <Calendar
-        onChange={onChange}
-        value={date}
-        tileClassName={tileClassName}
-        tileDisabled={tileDisabled}
-        minDate={new Date()}
+      <BigCalendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 500 }}
+        date={date}
+        onNavigate={setDate}
+        view={view}
+        onView={setView}
+        eventPropGetter={eventStyleGetter}
+        dayPropGetter={dayPropGetter}
+        views={['month', 'week', 'day']}
+        popup
       />
-      <div className="calendar-legend mt-3">
+      <div className="mt-3">
         <div className="d-flex align-items-center mb-2">
-          <div className="calendar-legend-available me-2"></div>
-          <span>Available</span>
+          <div className="available-indicator me-2"></div>
+          <span>High Availability</span>
+        </div>
+        <div className="d-flex align-items-center mb-2">
+          <div className="partially-available-indicator me-2"></div>
+          <span>Limited Availability</span>
         </div>
         <div className="d-flex align-items-center">
-          <div className="calendar-legend-unavailable me-2"></div>
-          <span>Unavailable</span>
+          <div className="unavailable-indicator me-2"></div>
+          <span>Fully Booked</span>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CustomCalendar;
+export default Calendar

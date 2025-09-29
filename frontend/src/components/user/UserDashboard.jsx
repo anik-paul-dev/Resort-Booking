@@ -1,144 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
-import { useAuth } from '../../hooks/useAuth';
-import { fetchUserBookings } from '../../services/api';
-import { formatDate, formatCurrency } from '../utils/helpers.jsx';
+import React, { useEffect, useState } from 'react'
+import { Card, Row, Col, Button, Table, Badge } from 'react-bootstrap'
+import { FaHotel, FaCalendarCheck, FaStar, FaUser, FaCog } from 'react-icons/fa'
+import { useBookings } from '../../hooks/useBookings'
+import { useAuth } from '../../hooks/useAuth'
+import LoadingSpinner from '../common/LoadingSpinner'
 
 const UserDashboard = () => {
-  const { user } = useAuth();
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth()
+  const { bookings, loading } = useBookings()
+  const [upcomingBookings, setUpcomingBookings] = useState([])
+  const [pastBookings, setPastBookings] = useState([])
 
   useEffect(() => {
-    const loadBookings = async () => {
-      try {
-        setLoading(true);
-        const response = await fetchUserBookings();
-        setBookings(response.data);
-      } catch (error) {
-        console.error('Error loading bookings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (bookings.length > 0) {
+      const now = new Date()
+      const upcoming = bookings.filter(booking => new Date(booking.checkOut) >= now)
+      const past = bookings.filter(booking => new Date(booking.checkOut) < now)
+      
+      setUpcomingBookings(upcoming)
+      setPastBookings(past)
+    }
+  }, [bookings])
 
-    loadBookings();
-  }, []);
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString()
+  }
 
-  const upcomingBookings = bookings.filter(
-    booking => new Date(booking.checkIn) > new Date() && booking.status !== 'cancelled'
-  );
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'confirmed':
+        return <Badge bg="success">Confirmed</Badge>
+      case 'pending':
+        return <Badge bg="warning">Pending</Badge>
+      case 'cancelled':
+        return <Badge bg="danger">Cancelled</Badge>
+      case 'completed':
+        return <Badge bg="info">Completed</Badge>
+      default:
+        return <Badge bg="secondary">{status}</Badge>
+    }
+  }
 
-  const pastBookings = bookings.filter(
-    booking => new Date(booking.checkOut) < new Date() || booking.status === 'cancelled'
-  );
+  if (loading) {
+    return <LoadingSpinner />
+  }
 
   return (
-    <div className="user-dashboard py-5">
-      <Container>
-        <h1 className="section-title">My Dashboard</h1>
+    <div>
+      <h2 className="mb-4">Welcome, {user?.name}!</h2>
+      
+      {/* Stats Cards */}
+      <Row className="mb-4">
+        <Col md={3} className="mb-3">
+          <Card className="h-100">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stats-icon me-3">
+                <FaHotel className="text-primary" size={30} />
+              </div>
+              <div>
+                <h3>{bookings.length}</h3>
+                <p className="mb-0">Total Bookings</p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
         
-        <Row>
-          <Col md={3} className="mb-4">
-            <Card className="text-center">
-              <Card.Body>
-                <Card.Title>Welcome, {user?.name}</Card.Title>
-                <p>{user?.email}</p>
-                <Link to="/user/profile" className="btn btn-outline-primary">Edit Profile</Link>
-              </Card.Body>
-            </Card>
-          </Col>
-          
-          <Col md={9}>
-            <Row>
-              <Col md={6} className="mb-4">
-                <Card>
-                  <Card.Body>
-                    <Card.Title>Upcoming Bookings</Card.Title>
-                    {loading ? (
-                      <div>Loading...</div>
-                    ) : upcomingBookings.length === 0 ? (
-                      <Alert variant="info">You have no upcoming bookings.</Alert>
-                    ) : (
-                      <div>
-                        {upcomingBookings.slice(0, 3).map(booking => (
-                          <div key={booking._id} className="mb-3 p-3 border rounded">
-                            <div className="d-flex justify-content-between">
-                              <div>
-                                <h5>{booking.room?.name}</h5>
-                                <p>
-                                  {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
-                                </p>
-                              </div>
-                              <div className="text-end">
-                                <span className={`badge ${booking.status === 'confirmed' ? 'bg-success' : 'bg-warning'}`}>
-                                  {booking.status}
-                                </span>
-                                <p className="mb-0">{formatCurrency(booking.totalPrice)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {upcomingBookings.length > 3 && (
-                          <div className="text-center">
-                            <Link to="/user/bookings" className="btn btn-sm btn-outline-primary">
-                              View All Bookings
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Card.Body>
-                </Card>
-              </Col>
-              
-              <Col md={6} className="mb-4">
-                <Card>
-                  <Card.Body>
-                    <Card.Title>Past Bookings</Card.Title>
-                    {loading ? (
-                      <div>Loading...</div>
-                    ) : pastBookings.length === 0 ? (
-                      <Alert variant="info">You have no past bookings.</Alert>
-                    ) : (
-                      <div>
-                        {pastBookings.slice(0, 3).map(booking => (
-                          <div key={booking._id} className="mb-3 p-3 border rounded">
-                            <div className="d-flex justify-content-between">
-                              <div>
-                                <h5>{booking.room?.name}</h5>
-                                <p>
-                                  {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
-                                </p>
-                              </div>
-                              <div className="text-end">
-                                <span className={`badge ${booking.status === 'cancelled' ? 'bg-danger' : 'bg-success'}`}>
-                                  {booking.status}
-                                </span>
-                                <p className="mb-0">{formatCurrency(booking.totalPrice)}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                        {pastBookings.length > 3 && (
-                          <div className="text-center">
-                            <Link to="/user/bookings" className="btn btn-sm btn-outline-primary">
-                              View All Bookings
-                            </Link>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      </Container>
+        <Col md={3} className="mb-3">
+          <Card className="h-100">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stats-icon me-3">
+                <FaCalendarCheck className="text-success" size={30} />
+              </div>
+              <div>
+                <h3>{upcomingBookings.length}</h3>
+                <p className="mb-0">Upcoming Stays</p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3} className="mb-3">
+          <Card className="h-100">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stats-icon me-3">
+                <FaStar className="text-warning" size={30} />
+              </div>
+              <div>
+                <h3>0</h3>
+                <p className="mb-0">Reviews</p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        
+        <Col md={3} className="mb-3">
+          <Card className="h-100">
+            <Card.Body className="d-flex align-items-center">
+              <div className="stats-icon me-3">
+                <FaUser className="text-info" size={30} />
+              </div>
+              <div>
+                <h3>{user?.role === 'admin' ? 'Admin' : 'Guest'}</h3>
+                <p className="mb-0">Account Type</p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      {/* Upcoming Bookings */}
+      <Row className="mb-4">
+        <Col md={12}>
+          <Card>
+            <Card.Header>
+              <h5 className="mb-0">Upcoming Bookings</h5>
+            </Card.Header>
+            <Card.Body>
+              {upcomingBookings.length > 0 ? (
+                <Table striped hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Room</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>Guests</th>
+                      <th>Total Price</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {upcomingBookings.map(booking => (
+                      <tr key={booking._id}>
+                        <td>{booking.room?.name}</td>
+                        <td>{formatDate(booking.checkIn)}</td>
+                        <td>{formatDate(booking.checkOut)}</td>
+                        <td>{booking.adults} Adults, {booking.children} Children</td>
+                        <td>${booking.totalPrice}</td>
+                        <td>{getStatusBadge(booking.status)}</td>
+                        <td>
+                          <Button 
+                            variant="outline-primary" 
+                            size="sm"
+                            href={`/user/bookings/${booking._id}`}
+                          >
+                            View
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p className="text-center">You have no upcoming bookings.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+      
+      {/* Past Bookings */}
+      <Row>
+        <Col md={12}>
+          <Card>
+            <Card.Header>
+              <h5 className="mb-0">Past Bookings</h5>
+            </Card.Header>
+            <Card.Body>
+              {pastBookings.length > 0 ? (
+                <Table striped hover responsive>
+                  <thead>
+                    <tr>
+                      <th>Room</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>Total Price</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pastBookings.map(booking => (
+                      <tr key={booking._id}>
+                        <td>{booking.room?.name}</td>
+                        <td>{formatDate(booking.checkIn)}</td>
+                        <td>{formatDate(booking.checkOut)}</td>
+                        <td>${booking.totalPrice}</td>
+                        <td>{getStatusBadge(booking.status)}</td>
+                        <td>
+                          <Button 
+                            variant="outline-primary" 
+                            size="sm"
+                            href={`/user/bookings/${booking._id}`}
+                          >
+                            View
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              ) : (
+                <p className="text-center">You have no past bookings.</p>
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
     </div>
-  );
-};
+  )
+}
 
-export default UserDashboard;
+export default UserDashboard

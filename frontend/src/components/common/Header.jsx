@@ -1,83 +1,70 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
-import { useAuth } from '../../hooks/useAuth';
-import { useApp } from '../../context/AppContext';
-import { FaUser, FaSignOutAlt, FaHotel, FaBars } from 'react-icons/fa';
+import React, { useState } from 'react'
+import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap'
+import { Link, useNavigate } from 'react-router-dom'
+import { FaSearch, FaUser, FaSignOutAlt, FaHotel, FaBars } from 'react-icons/fa'
+import { useAuth } from '../../hooks/useAuth'
 
 const Header = () => {
-  const { user, logout, isAuthenticated, isAdmin } = useAuth();
-  const { settings } = useApp();
-  const [expanded, setExpanded] = useState(false);
-  const navigate = useNavigate();
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+  const [expanded, setExpanded] = useState(false)
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+    logout()
+    navigate('/')
+  }
 
-  const handleLinkClick = () => {
-    setExpanded(false);
-  };
+  const toggleNavbar = () => {
+    setExpanded(!expanded)
+  }
 
   return (
-    <header className="header">
-      <Navbar expand="lg" expanded={expanded} onToggle={setExpanded}>
-        <Container>
-          <Navbar.Brand as={Link} to="/">
-            {settings?.logo ? (
-              <img 
-                src={settings.logo} 
-                alt={settings?.siteName || 'Resort Booking'} 
-                height="30" 
-                className="d-inline-block align-top"
-              />
-            ) : (
-              <FaHotel className="me-2" />
-            )}
-            {settings?.siteName || 'Resort Booking'}
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav">
-            <FaBars />
-          </Navbar.Toggle>
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
-              <Nav.Link as={Link} to="/" onClick={handleLinkClick}>Home</Nav.Link>
-              <Nav.Link as={Link} to="/rooms" onClick={handleLinkClick}>Rooms</Nav.Link>
-              <Nav.Link as={Link} to="/features" onClick={handleLinkClick}>Features</Nav.Link>
-              <Nav.Link as={Link} to="/facilities" onClick={handleLinkClick}>Facilities</Nav.Link>
-              <Nav.Link as={Link} to="/room-availability" onClick={handleLinkClick}>Availability</Nav.Link>
-              <Nav.Link as={Link} to="/menu-packages" onClick={handleLinkClick}>Menu & Packages</Nav.Link>
-              <Nav.Link as={Link} to="/contact" onClick={handleLinkClick}>Contact</Nav.Link>
-              
-              {isAuthenticated ? (
-                <NavDropdown title={<><FaUser className="me-1" /> {user.name}</>} id="basic-nav-dropdown">
-                  {isAdmin && (
-                    <>
-                      <NavDropdown.Item as={Link} to="/admin" onClick={handleLinkClick}>Admin Dashboard</NavDropdown.Item>
-                      <NavDropdown.Divider />
-                    </>
-                  )}
-                  <NavDropdown.Item as={Link} to="/user" onClick={handleLinkClick}>My Dashboard</NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/user/profile" onClick={handleLinkClick}>Profile</NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to="/user/bookings" onClick={handleLinkClick}>My Bookings</NavDropdown.Item>
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item onClick={handleLogout}>
-                    <FaSignOutAlt className="me-1" /> Logout
+    <Navbar bg="dark" variant="dark" expand="lg" expanded={expanded} className="sticky-top">
+      <Container>
+        <Navbar.Brand as={Link} to="/">
+          <FaHotel className="me-2" /> Asian Resort
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={toggleNavbar}>
+          <FaBars />
+        </Navbar.Toggle>
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/" onClick={() => setExpanded(false)}>Home</Nav.Link>
+            <Nav.Link as={Link} to="/rooms" onClick={() => setExpanded(false)}>Rooms</Nav.Link>
+            <Nav.Link as={Link} to="/facilities" onClick={() => setExpanded(false)}>Facilities</Nav.Link>
+            <Nav.Link as={Link} to="/features" onClick={() => setExpanded(false)}>Features</Nav.Link>
+            <Nav.Link as={Link} to="/menu" onClick={() => setExpanded(false)}>Menu & Packages</Nav.Link>
+            <Nav.Link as={Link} to="/availability" onClick={() => setExpanded(false)}>Availability</Nav.Link>
+            <Nav.Link as={Link} to="/contact" onClick={() => setExpanded(false)}>Contact</Nav.Link>
+          </Nav>
+          <Nav>
+            {user ? (
+              <NavDropdown title={<><FaUser className="me-1" /> {user.name}</>} id="basic-nav-dropdown">
+                {user.role === 'admin' ? (
+                  <NavDropdown.Item as={Link} to="/admin/dashboard" onClick={() => setExpanded(false)}>
+                    Admin Dashboard
                   </NavDropdown.Item>
-                </NavDropdown>
-              ) : (
-                <>
-                  <Nav.Link as={Link} to="/login" onClick={handleLinkClick}>Login</Nav.Link>
-                  <Nav.Link as={Link} to="/register" onClick={handleLinkClick}>Register</Nav.Link>
-                </>
-              )}
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-    </header>
-  );
-};
+                ) : (
+                  <NavDropdown.Item as={Link} to="/user/dashboard" onClick={() => setExpanded(false)}>
+                    My Dashboard
+                  </NavDropdown.Item>
+                )}
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={handleLogout}>
+                  <FaSignOutAlt className="me-1" /> Logout
+                </NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login" onClick={() => setExpanded(false)}>Login</Nav.Link>
+                <Nav.Link as={Link} to="/register" onClick={() => setExpanded(false)}>Register</Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  )
+}
 
-export default Header;
+export default Header

@@ -1,12 +1,11 @@
-const auth = require('./auth');
-
-const admin = (req, res, next) => {
-  auth(req, res, () => {
-    if (req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied. Admin resource.' });
-    }
+// Admin middleware
+exports.isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
     next();
-  });
+  } else {
+    return res.status(403).json({ 
+      success: false, 
+      message: 'Access denied. Admin privileges required.' 
+    });
+  }
 };
-
-module.exports = admin;

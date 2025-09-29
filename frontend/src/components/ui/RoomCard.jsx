@@ -1,41 +1,80 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Card, Button } from 'react-bootstrap';
-import { generateStars, formatCurrency } from '../utils/helpers.jsx';
+import React from 'react'
+import { Card, Button, Badge } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
+import { FaStar, FaUsers, FaBed, FaBath } from 'react-icons/fa'
+import ImageSlider from './ImageSlider'
 
 const RoomCard = ({ room }) => {
   return (
     <Card className="room-card h-100">
-      <Card.Img variant="top" src={room.images[0]} alt={room.name} />
-      <Card.Body>
+      <div className="position-relative">
+        <ImageSlider images={room.images} height={220} />
+        {!room.available && (
+          <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-75">
+            <Badge bg="danger" className="fs-6">Not Available</Badge>
+          </div>
+        )}
+      </div>
+      <Card.Body className="d-flex flex-column">
         <Card.Title>{room.name}</Card.Title>
-        <Card.Text>
-          <div className="room-price">{formatCurrency(room.price)} <small>/ night</small></div>
-          <div className="room-rating mb-2">
-            {generateStars(room.averageRating || 0)}
-            <span className="ms-2">({room.reviews?.length || 0} reviews)</span>
+        <div className="mb-2">
+          <FaStar className="text-warning me-1" />
+          <span>{room.rating}</span>
+          <span className="text-muted ms-1">({room.reviewsCount} reviews)</span>
+        </div>
+        <div className="mb-3">
+          <div className="d-flex align-items-center mb-1">
+            <FaUsers className="me-2" />
+            <span>{room.capacity.adults} Adults, {room.capacity.children} Children</span>
           </div>
-          <div className="room-capacity mb-2">
-            <i className="bi bi-people me-1"></i> {room.capacity.adults} adults, {room.capacity.children} children
+          <div className="d-flex align-items-center">
+            <FaBed className="me-2" />
+            <span>{room.bedType}</span>
           </div>
-          <div className="room-features mb-3">
-            {room.features?.slice(0, 3).map(feature => (
-              <span key={feature._id} className="badge bg-light text-dark me-1">
-                {feature.name}
-              </span>
-            ))}
-            {room.features?.length > 3 && (
-              <span className="badge bg-light text-dark">+{room.features.length - 3} more</span>
-            )}
+        </div>
+        <div className="mb-3">
+          {room.features.slice(0, 3).map((feature, index) => (
+            <Badge key={index} bg="light" text="dark" className="me-1 mb-1">
+              {feature}
+            </Badge>
+          ))}
+          {room.features.length > 3 && (
+            <Badge bg="light" text="dark" className="mb-1">
+              +{room.features.length - 3} more
+            </Badge>
+          )}
+        </div>
+        <div className="mt-auto">
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              <span className="price">${room.pricePerNight}</span>
+              <span className="text-muted"> /night</span>
+            </div>
+            <div>
+              <Button 
+                as={Link} 
+                to={`/room/${room._id}`} 
+                variant="outline-primary" 
+                size="sm"
+                className="me-2"
+              >
+                Details
+              </Button>
+              <Button 
+                as={Link} 
+                to={`/room/${room._id}#booking`} 
+                variant="primary" 
+                size="sm"
+                disabled={!room.available}
+              >
+                Book
+              </Button>
+            </div>
           </div>
-        </Card.Text>
-        <div className="d-flex justify-content-between">
-          <Button as={Link} to={`/rooms/${room._id}`} variant="outline-primary">Details</Button>
-          <Button variant="primary" disabled={!room.isActive}>Book Now</Button>
         </div>
       </Card.Body>
     </Card>
-  );
-};
+  )
+}
 
-export default RoomCard;
+export default RoomCard

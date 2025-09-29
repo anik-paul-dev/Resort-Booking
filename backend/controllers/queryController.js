@@ -1,111 +1,108 @@
 const Query = require('../models/Query');
-const { sendQueryResponseEmail } = require('../services/email');
 
-const getQueries = async (req, res) => {
+// @desc    Get all queries
+// @route   GET /api/queries
+// @access  Private (Admin only)
+exports.getQueries = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, status } = req.query;
-    const query = {};
-    
-    if (status) {
-      query.status = status;
-    }
+    const queries = await Query.find().sort({ createdAt: -1 });
 
-    const queries = await Query.find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    const count = await Query.countDocuments(query);
-
-    res.json({
-      queries,
-      totalPages: Math.ceil(count / limit),
-      currentPage: page,
-      totalQueries: count,
+    res.status(200).json({
+      success: true,
+      count: queries.length,
+      data: queries
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const getQueryById = async (req, res) => {
+// @desc    Get single query
+// @route   GET /api/queries/:id
+// @access  Private (Admin only)
+exports.getQuery = async (req, res, next) => {
   try {
     const query = await Query.findById(req.params.id);
-    
-    if (!query) {
-      return res.status(404).json({ message: 'Query not found' });
-    }
-    
-    res.json(query);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-const createQuery = async (req, res) => {
-  try {
-    const { name, email, subject, message } = req.body;
-    
-    const query = new Query({
-      name,
-      email,
-      subject,
-      message,
+    if (!query) {
+      return res.status(404).json({
+        success: false,
+        message: `Query not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: query
     });
-    
-    await query.save();
-    res.status(201).json(query);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    next(err);
   }
 };
 
-const updateQueryStatus = async (req, res) => {
+// @desc    Create new query
+// @route   POST /api/queries
+// @access  Public
+exports.createQuery = async (req, res, next) => {
   try {
-    const { status, response } = req.body;
-    const query = await Query.findById(req.params.id);
-    
-    if (!query) {
-      return res.status(404).json({ message: 'Query not found' });
-    }
-    
-    query.status = status;
-    if (response) {
-      query.response = response;
-    }
-    
-    await query.save();
-    
-    if (status === 'read' && response) {
-      await sendQueryResponseEmail(query.email, query.subject, response);
-    }
-    
-    res.json(query);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const query = await Query.create(req.body);
+
+    res.status(201).json({
+      success: true,
+      message: 'Query submitted successfully'
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
-const deleteQuery = async (req, res) => {
+// @desc    Update query
+// @route   PUT /api/queries/:id
+// @access  Private (Admin only)
+exports.updateQuery = async (req, res, next) => {
+  try {
+    const query = await Query.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!query) {
+      return res.status(404).json({
+        success: false,
+        message: `Query not found with id of ${req.params.id}`
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: query
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete query
+// @route   DELETE /api/queries/:id
+// @access  Private (Admin only)
+exports.deleteQuery = async (req, res, next) => {
   try {
     const query = await Query.findById(req.params.id);
-    
-    if (!query) {
-      return res.status(404).json({ message: 'Query not found' });
-    }
-    
-    await query.remove();
-    res.json({ message: 'Query deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
 
-module.exports = {
-  getQueries,
-  getQueryById,
-  createQuery,
-  updateQueryStatus,
-  deleteQuery,
+    if (!query) {
+      return res.status(404).json({
+        success: false,
+        message: `Query not found with id of ${req.params.id}`
+      });
+    }
+
+    query.remove();
+
+    res.status(200).json({
+      success: true,
+      data: {}
+    });
+  } catch (err) {
+    next(err);
+  }
 };
