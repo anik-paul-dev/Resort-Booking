@@ -1,22 +1,36 @@
-import React, { useState } from 'react'
-import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
-import { FaSearch, FaUser, FaSignOutAlt, FaHotel, FaBars } from 'react-icons/fa'
-import { useAuth } from '../../hooks/useAuth'
+// frontend/src/components/common/Header.jsx
+import React, { useState } from 'react';
+import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaSearch, FaUser, FaSignOutAlt, FaHotel, FaBars } from 'react-icons/fa';
+import { useAuth } from '../../hooks/useAuth';
 
 const Header = () => {
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-  const [expanded, setExpanded] = useState(false)
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
 
   const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+    logout();
+    navigate('/');
+    setExpanded(false);
+  };
 
   const toggleNavbar = () => {
-    setExpanded(!expanded)
-  }
+    setExpanded(!expanded);
+  };
+
+  const adminNavItems = [
+    { id: 'dashboard', label: 'Dashboard', path: '/admin/dashboard' },
+    { id: 'rooms', label: 'Rooms', path: '/admin/rooms' },
+    { id: 'features', label: 'Features', path: '/admin/features' },
+    { id: 'facilities', label: 'Facilities', path: '/admin/facilities' },
+    { id: 'carousel', label: 'Carousel', path: '/admin/carousel' },
+    { id: 'users', label: 'Users', path: '/admin/users' },
+    { id: 'reviews', label: 'Reviews', path: '/admin/reviews' },
+    { id: 'queries', label: 'Queries', path: '/admin/queries' },
+    { id: 'settings', label: 'Settings', path: '/admin/settings' },
+  ];
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg" expanded={expanded} className="sticky-top">
@@ -41,18 +55,42 @@ const Header = () => {
             {user ? (
               <NavDropdown title={<><FaUser className="me-1" /> {user.name}</>} id="basic-nav-dropdown">
                 {user.role === 'admin' ? (
-                  <NavDropdown.Item as={Link} to="/admin/dashboard" onClick={() => setExpanded(false)}>
-                    Admin Dashboard
-                  </NavDropdown.Item>
+                  <>
+                    {adminNavItems.map((item) => (
+                      <NavDropdown.Item
+                        key={item.id}
+                        as={Link}
+                        to={item.path}
+                        onClick={() => setExpanded(false)}
+                      >
+                        {item.label}
+                      </NavDropdown.Item>
+                    ))}
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={handleLogout}>
+                      <FaSignOutAlt className="me-1" /> Logout
+                    </NavDropdown.Item>
+                  </>
                 ) : (
-                  <NavDropdown.Item as={Link} to="/user/dashboard" onClick={() => setExpanded(false)}>
-                    My Dashboard
-                  </NavDropdown.Item>
+                  <>
+                    <NavDropdown.Item as={Link} to="/user/dashboard" onClick={() => setExpanded(false)}>
+                      My Dashboard
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/user/profile" onClick={() => setExpanded(false)}>
+                      Profile
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/user/bookings" onClick={() => setExpanded(false)}>
+                      Bookings
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/user/settings" onClick={() => setExpanded(false)}>
+                      Settings
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item onClick={handleLogout}>
+                      <FaSignOutAlt className="me-1" /> Logout
+                    </NavDropdown.Item>
+                  </>
                 )}
-                <NavDropdown.Divider />
-                <NavDropdown.Item onClick={handleLogout}>
-                  <FaSignOutAlt className="me-1" /> Logout
-                </NavDropdown.Item>
               </NavDropdown>
             ) : (
               <>
@@ -64,7 +102,7 @@ const Header = () => {
         </Navbar.Collapse>
       </Container>
     </Navbar>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

@@ -1,3 +1,4 @@
+/* frontend/src/custom.css */
 :root {
   --primary-color: #8B4513;
   --secondary-color: #D2691E;
@@ -263,10 +264,19 @@ body {
 }
 
 /* Admin Dashboard Styles */
+.admin-container {
+  min-height: 100vh;
+}
+
 .admin-sidebar {
   background-color: var(--dark-color);
-  min-height: calc(100vh - 56px);
-  padding: 20px 0;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
 }
 
 .admin-sidebar .nav-link {
@@ -274,6 +284,8 @@ body {
   padding: 10px 20px;
   border-radius: 5px;
   margin: 5px 10px;
+  display: flex;
+  align-items: center;
 }
 
 .admin-sidebar .nav-link:hover,
@@ -283,7 +295,24 @@ body {
 }
 
 .admin-content {
+  margin-left: 250px;
   padding: 20px;
+  background-color: #f8f9fa;
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.show {
+    transform: translateX(0);
+  }
+
+  .admin-content {
+    margin-left: 0;
+  }
 }
 
 /* User Dashboard Styles */
