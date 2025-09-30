@@ -13,9 +13,6 @@ const { uploadRoomImages, uploadFacilityImage, uploadCarouselImage } = require('
 const cloudinary = require('../config/cloudinary');
 const { body, validationResult } = require('express-validator');
 
-// @route   GET /api/admin/stats
-// @desc    Get admin stats
-// @access  Private (Admin only)
 router.get('/stats', protect, authorize('admin'), async (req, res) => {
   try {
     // Get counts
@@ -85,9 +82,6 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   GET /api/admin/users
-// @desc    Get all users
-// @access  Private (Admin only)
 router.get('/users', protect, authorize('admin'), async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
@@ -98,9 +92,6 @@ router.get('/users', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/users/:id
-// @desc    Update user
-// @access  Private (Admin only)
 router.put('/users/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -123,9 +114,6 @@ router.put('/users/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   DELETE /api/admin/users/:id
-// @desc    Delete user
-// @access  Private (Admin only)
 router.delete('/users/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -143,9 +131,7 @@ router.delete('/users/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   GET /api/admin/rooms
-// @desc    Get all rooms
-// @access  Private (Admin only)
+
 router.get('/rooms', protect, authorize('admin'), async (req, res) => {
   try {
     const rooms = await Room.find().sort({ createdAt: -1 });
@@ -156,9 +142,6 @@ router.get('/rooms', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   POST /api/admin/rooms
-// @desc    Create a room
-// @access  Private (Admin only)
 router.post('/rooms', protect, authorize('admin'), uploadRoomImages, async (req, res) => {
   try {
     // Get image URLs from uploaded files
@@ -179,9 +162,6 @@ router.post('/rooms', protect, authorize('admin'), uploadRoomImages, async (req,
   }
 });
 
-// @route   PUT /api/admin/rooms/:id
-// @desc    Update a room
-// @access  Private (Admin only)
 router.put('/rooms/:id', protect, authorize('admin'), uploadRoomImages, async (req, res) => {
   try {
     let room = await Room.findById(req.params.id);
@@ -216,9 +196,6 @@ router.put('/rooms/:id', protect, authorize('admin'), uploadRoomImages, async (r
   }
 });
 
-// @route   DELETE /api/admin/rooms/:id
-// @desc    Delete a room
-// @access  Private (Admin only)
 router.delete('/rooms/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
@@ -242,9 +219,7 @@ router.delete('/rooms/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   GET /api/admin/facilities
-// @desc    Get all facilities
-// @access  Private (Admin only)
+
 router.get('/facilities', protect, authorize('admin'), async (req, res) => {
   try {
     const facilities = await Facility.find().sort({ createdAt: -1 });
@@ -255,9 +230,6 @@ router.get('/facilities', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   POST /api/admin/facilities
-// @desc    Create a facility
-// @access  Private (Admin only)
 router.post('/facilities', protect, authorize('admin'), uploadFacilityImage, async (req, res) => {
   try {
     // Create facility
@@ -275,9 +247,7 @@ router.post('/facilities', protect, authorize('admin'), uploadFacilityImage, asy
   }
 });
 
-// @route   PUT /api/admin/facilities/:id
-// @desc    Update a facility
-// @access  Private (Admin only)
+
 router.put('/facilities/:id', protect, authorize('admin'), uploadFacilityImage, async (req, res) => {
   try {
     let facility = await Facility.findById(req.params.id);
@@ -310,9 +280,6 @@ router.put('/facilities/:id', protect, authorize('admin'), uploadFacilityImage, 
   }
 });
 
-// @route   DELETE /api/admin/facilities/:id
-// @desc    Delete a facility
-// @access  Private (Admin only)
 router.delete('/facilities/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const facility = await Facility.findById(req.params.id);
@@ -334,9 +301,6 @@ router.delete('/facilities/:id', protect, authorize('admin'), async (req, res) =
   }
 });
 
-// @route   GET /api/admin/features
-// @desc    Get all features
-// @access  Private (Admin only)
 router.get('/features', protect, authorize('admin'), async (req, res) => {
   try {
     const features = await Feature.find().sort({ createdAt: -1 });
@@ -347,9 +311,6 @@ router.get('/features', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   POST /api/admin/features
-// @desc    Create a feature
-// @access  Private (Admin only)
 router.post('/features', protect, authorize('admin'), async (req, res) => {
   try {
     // Create feature
@@ -364,9 +325,6 @@ router.post('/features', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/features/:id
-// @desc    Update a feature
-// @access  Private (Admin only)
 router.put('/features/:id', protect, authorize('admin'), async (req, res) => {
   try {
     let feature = await Feature.findById(req.params.id);
@@ -389,9 +347,7 @@ router.put('/features/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   DELETE /api/admin/features/:id
-// @desc    Delete a feature
-// @access  Private (Admin only)
+
 router.delete('/features/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const feature = await Feature.findById(req.params.id);
@@ -408,10 +364,6 @@ router.delete('/features/:id', protect, authorize('admin'), async (req, res) => 
     res.status(500).send('Server error');
   }
 });
-
-// @route   GET /api/admin/carousels
-// @desc    Get all carousels
-// @access  Private (Admin only)
 router.get('/carousels', protect, authorize('admin'), async (req, res) => {
   try {
     const carousels = await Carousel.find().sort({ order: 1 });
@@ -422,9 +374,6 @@ router.get('/carousels', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   POST /api/admin/carousels
-// @desc    Create a carousel
-// @access  Private (Admin only)
 router.post('/carousels', protect, authorize('admin'), uploadCarouselImage, async (req, res) => {
   try {
     // Create carousel
@@ -442,9 +391,6 @@ router.post('/carousels', protect, authorize('admin'), uploadCarouselImage, asyn
   }
 });
 
-// @route   PUT /api/admin/carousels/:id
-// @desc    Update a carousel
-// @access  Private (Admin only)
 router.put('/carousels/:id', protect, authorize('admin'), uploadCarouselImage, async (req, res) => {
   try {
     let carousel = await Carousel.findById(req.params.id);
@@ -477,9 +423,6 @@ router.put('/carousels/:id', protect, authorize('admin'), uploadCarouselImage, a
   }
 });
 
-// @route   DELETE /api/admin/carousels/:id
-// @desc    Delete a carousel
-// @access  Private (Admin only)
 router.delete('/carousels/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const carousel = await Carousel.findById(req.params.id);
@@ -501,9 +444,6 @@ router.delete('/carousels/:id', protect, authorize('admin'), async (req, res) =>
   }
 });
 
-// @route   GET /api/admin/reviews
-// @desc    Get all reviews
-// @access  Private (Admin only)
 router.get('/reviews', protect, authorize('admin'), async (req, res) => {
   try {
     const reviews = await Review.find()
@@ -518,9 +458,6 @@ router.get('/reviews', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/reviews/:id
-// @desc    Update a review
-// @access  Private (Admin only)
 router.put('/reviews/:id', protect, authorize('admin'), async (req, res) => {
   try {
     let review = await Review.findById(req.params.id);
@@ -543,9 +480,6 @@ router.put('/reviews/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   DELETE /api/admin/reviews/:id
-// @desc    Delete a review
-// @access  Private (Admin only)
 router.delete('/reviews/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const review = await Review.findById(req.params.id);
@@ -563,9 +497,6 @@ router.delete('/reviews/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   GET /api/admin/queries
-// @desc    Get all queries
-// @access  Private (Admin only)
 router.get('/queries', protect, authorize('admin'), async (req, res) => {
   try {
     const queries = await Query.find().sort({ createdAt: -1 });
@@ -576,9 +507,6 @@ router.get('/queries', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/queries/:id
-// @desc    Update a query
-// @access  Private (Admin only)
 router.put('/queries/:id', protect, authorize('admin'), async (req, res) => {
   try {
     let query = await Query.findById(req.params.id);
@@ -601,9 +529,6 @@ router.put('/queries/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   DELETE /api/admin/queries/:id
-// @desc    Delete a query
-// @access  Private (Admin only)
 router.delete('/queries/:id', protect, authorize('admin'), async (req, res) => {
   try {
     const query = await Query.findById(req.params.id);
@@ -621,9 +546,6 @@ router.delete('/queries/:id', protect, authorize('admin'), async (req, res) => {
   }
 });
 
-// @route   PUT /api/admin/settings
-// @desc    Update site settings
-// @access  Private (Admin only)
 router.put('/settings', protect, authorize('admin'), async (req, res) => {
   try {
     // In a real application, you would save settings to a database
