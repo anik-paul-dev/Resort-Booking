@@ -1,3 +1,4 @@
+// frontend/src/components/admin/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react'
 import { Card, Row, Col, Table, Button, Badge } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
@@ -18,11 +19,20 @@ const AdminDashboard = () => {
     return <div className="text-center py-5">Loading dashboard...</div>
   }
 
-  if (!stats) {
-    return <div className="text-center py-5">Failed to load dashboard data</div>
+  // Default values to prevent undefined errors
+  const counts = stats?.counts || {
+    totalRooms: 0,
+    availableRooms: 0,
+    totalBookings: 0,
+    confirmedBookings: 0,
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingQueries: 0
   }
 
-  const { counts, revenue } = stats
+  const revenue = stats?.revenue || {
+    totalRevenue: 0
+  }
 
   return (
     <div>
@@ -102,7 +112,7 @@ const AdminDashboard = () => {
               </Button>
             </Card.Header>
             <Card.Body>
-              {recentData.bookings.length > 0 ? (
+              {recentData.bookings && recentData.bookings.length > 0 ? (
                 <Table striped hover responsive>
                   <thead>
                     <tr>
@@ -150,7 +160,7 @@ const AdminDashboard = () => {
               </Button>
             </Card.Header>
             <Card.Body>
-              {recentData.reviews.length > 0 ? (
+              {recentData.reviews && recentData.reviews.length > 0 ? (
                 <Table striped hover responsive>
                   <thead>
                     <tr>
@@ -199,7 +209,7 @@ const AdminDashboard = () => {
               </Button>
             </Card.Header>
             <Card.Body>
-              {recentData.queries.length > 0 ? (
+              {recentData.queries && recentData.queries.length > 0 ? (
                 <Table striped hover responsive>
                   <thead>
                     <tr>

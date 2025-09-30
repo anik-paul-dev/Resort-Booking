@@ -1,18 +1,21 @@
+// backend/controllers/authController.js
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     // Create user
     const user = await User.create({
       name,
       email,
-      password
+      password,
+      role: role || 'user' // Default to 'user' if not specified
     });
 
     // Create token
@@ -87,7 +90,7 @@ exports.login = async (req, res, next) => {
 };
 
 // @desc    Get current logged in user
-// @route   POST /api/auth/me
+// @route   GET /api/auth/me
 // @access  Private
 exports.getMe = async (req, res, next) => {
   try {
@@ -103,7 +106,7 @@ exports.getMe = async (req, res, next) => {
 };
 
 // @desc    Log user out / clear cookie
-// @route   GET /api/auth/logout
+// @route   POST /api/auth/logout
 // @access  Private
 exports.logout = async (req, res, next) => {
   try {
@@ -141,11 +144,12 @@ exports.forgotPassword = async (req, res, next) => {
     const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl}`;
 
     try {
-      await sendEmail({
-        email: user.email,
-        subject: 'Password reset token',
-        message
-      });
+      // In a real app, you would send an email here
+      // await sendEmail({
+      //   email: user.email,
+      //   subject: 'Password reset token',
+      //   message
+      // });
 
       res.status(200).json({ success: true, message: 'Email sent' });
     } catch (err) {

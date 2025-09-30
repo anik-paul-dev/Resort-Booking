@@ -1,3 +1,4 @@
+// frontend/src/hooks/useAuth.jsx
 import { useState, useEffect, useContext } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { login as apiLogin, register as apiRegister, logout as apiLogout, getCurrentUser } from '../services/auth'
@@ -16,7 +17,7 @@ export const useAuth = () => {
       if (token) {
         try {
           const userData = await getCurrentUser()
-          setUser(userData)
+          setUser(userData.data)
           setIsAuthenticated(true)
         } catch (err) {
           localStorage.removeItem('token')
@@ -65,11 +66,16 @@ export const useAuth = () => {
     }
   }
 
-  const logout = () => {
-    apiLogout()
-    localStorage.removeItem('token')
-    setUser(null)
-    setIsAuthenticated(false)
+  const logout = async () => {
+    try {
+      await apiLogout()
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      localStorage.removeItem('token')
+      setUser(null)
+      setIsAuthenticated(false)
+    }
   }
 
   const forgotPassword = async (email) => {

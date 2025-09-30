@@ -1,3 +1,4 @@
+// frontend/src/hooks/useAdmin.jsx
 import { useState, useEffect } from 'react'
 import {
   getAdminStats,
@@ -27,7 +28,7 @@ import {
 } from '../services/admin'
 
 export const useAdmin = () => {
-  const [stats, setStats] = useState({})
+  const [stats, setStats] = useState(null) // Changed from {} to null to handle undefined state
   const [users, setUsers] = useState([])
   const [bookings, setBookings] = useState([])
   const [reviews, setReviews] = useState([])

@@ -1,3 +1,4 @@
+// frontend/src/components/user/UserDashboard.jsx
 import React, { useEffect, useState } from 'react'
 import { Card, Row, Col, Button, Table, Badge } from 'react-bootstrap'
 import { FaHotel, FaCalendarCheck, FaStar, FaUser, FaCog } from 'react-icons/fa'
@@ -12,7 +13,7 @@ const UserDashboard = () => {
   const [pastBookings, setPastBookings] = useState([])
 
   useEffect(() => {
-    if (bookings.length > 0) {
+    if (bookings && bookings.length > 0) {
       const now = new Date()
       const upcoming = bookings.filter(booking => new Date(booking.checkOut) >= now)
       const past = bookings.filter(booking => new Date(booking.checkOut) < now)
@@ -58,7 +59,7 @@ const UserDashboard = () => {
                 <FaHotel className="text-primary" size={30} />
               </div>
               <div>
-                <h3>{bookings.length}</h3>
+                <h3>{bookings ? bookings.length : 0}</h3>
                 <p className="mb-0">Total Bookings</p>
               </div>
             </Card.Body>

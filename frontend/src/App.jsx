@@ -1,3 +1,4 @@
+// frontend/src/App.jsx
 import { Routes, Route } from 'react-router-dom'
 import Header from './components/common/Header'
 import Footer from './components/common/Footer'
@@ -12,6 +13,7 @@ import MenuPackages from './pages/MenuPackages'
 import About from './pages/About'
 import Login from './components/auth/Login'
 import Register from './components/auth/Register'
+import AdminRegister from './components/auth/AdminRegister'
 import AdminLayout from './pages/AdminLayout'
 import UserLayout from './pages/UserLayout'
 import PrivateRoute from './components/common/PrivateRoute'
@@ -49,6 +51,7 @@ function App() {
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
           
           {/* Admin Routes */}
           <Route 
